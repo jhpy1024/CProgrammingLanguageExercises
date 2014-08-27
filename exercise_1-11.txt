@@ -1,0 +1,6 @@
+Words that continue onto the next line (example given below) will be counted as two words rather than one.
+
+Example:
+--------
+Once upon a time there was a you-
+ng man named Thomas. The end.
