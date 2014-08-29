@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 /* Lines with length >= to this will be printed */
-#define MIN_LINE_LENGTH 5
+#define MIN_LINE_LENGTH 80
 #define INITIAL_BUFFER_SIZE 1024
 #define BUFFER_GROW_FACTOR 2
 
