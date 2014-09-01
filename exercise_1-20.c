@@ -19,8 +19,6 @@ int main()
 
     while ((current_char = getchar()) != EOF)
     {
-        ++char_index;
-
         if (current_char == '\t')
         {
             for (; char_index < get_tab_size(char_index); ++char_index)
@@ -37,6 +35,8 @@ int main()
         {
             putchar(current_char);
         }
+
+        ++char_index;
     }
 
     return 0;
