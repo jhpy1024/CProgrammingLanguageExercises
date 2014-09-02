@@ -19,8 +19,10 @@ int main()
     {
         ++char_position;
 
+        /* If on the penultimate character. */ 
         if (char_position == FOLD_COLUMN - 1)
         {
+            /* If whitespace, simply start a newline and continue from there. */
             if (is_whitespace(current_char))
             {
                 putchar('\n');
@@ -29,6 +31,10 @@ int main()
             }
             else
             {
+                /*
+                 * Not whitespace so in a word. If position_in_word == NOT_IN_WORD then
+                 * this is the first character in the word and so we set it to 1.
+                 */
                 if (position_in_word == NOT_IN_WORD)
                 {
                     position_in_word = 1;
@@ -38,19 +44,27 @@ int main()
                     ++position_in_word;
                 }
 
+                /*
+                 * If we are on the first character in the word, don't hyphenate.
+                 * Instead start the word on a newline.
+                 */
                 if (position_in_word == 1)
                 {
                     printf("\n%c", current_char);
                 }
+                /* Otherwise hyphenating is fine. */
                 else
                 {
                     printf("-\n%c", current_char);
                 }
+
+                /* In any case we have started a newline so reset char_position to zero. */
                 char_position = 0;
             }
         }
         else
         {
+            /* If we encounter whitespace we are no longer in a word. */
             if (is_whitespace(current_char))
             {
                 position_in_word = NOT_IN_WORD;
