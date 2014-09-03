@@ -36,5 +36,43 @@ int main()
     char input[INPUT_BUFFER_SIZE];
     read_input(input);
 
+    for (int i = 0; input[i] != '\0'; ++i)
+    {
+        char current_char = input[i];
+
+        /* Ensure that we do not try to access past the end of the array. */
+        char next_char = (i == (INPUT_BUFFER_SIZE - 1) ? '\0' : input[i + 1]);
+
+        if (current_char == '/' && next_char == '/' && literal_state == NOT_IN_LITERAL)
+        {
+            comment_state = IN_SINGLE_LINE_COMMENT;
+        }
+        else if (current_char == '/' && next_char == '*' && literal_state == NOT_IN_LITERAL)
+        {
+            comment_state = IN_MULTI_LINE_COMMENT;
+        }
+        else if (current_char == '*' && next_char == '/' && comment_state == IN_MULTI_LINE_COMMENT)
+        {
+            comment_state = NOT_IN_COMMENT;
+        }
+        else if (current_char == '\n' && comment_state == IN_SINGLE_LINE_COMMENT)
+        {
+            comment_state = NOT_IN_COMMENT;
+        }
+        else if (current_char == '"')
+        {
+            literal_state = (literal_state == NOT_IN_LITERAL ? IN_STRING_LITERAL : NOT_IN_LITERAL);
+        }
+        else if (current_char == '\'')
+        {
+            literal_state = (literal_state == NOT_IN_LITERAL ? IN_CHARACTER_LITERAL : NOT_IN_LITERAL);
+        }
+
+        if (comment_state == NOT_IN_COMMENT)
+        {
+            putchar(current_char);
+        }
+    }
+
     return 0;
 }
