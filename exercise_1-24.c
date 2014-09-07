@@ -42,16 +42,29 @@ void read_input(int input[])
     }
 }
 
-void print_error(int line, char message[])
+void print_error(char message[])
 {
-    printf("[error @ line %d] %s\n", line, message);
+    printf("[error] %s\n", message);
 }
 
-void print_error_if(int line, char message[], bool condition)
+void print_error_if(char message[], bool condition)
 {
     if (condition)
     {
-        print_error(line, message);
+        print_error(message);
+    }
+}
+
+void print_error_ln(int line, int char_number, char message[])
+{
+    printf("[error @ line %d, character %d] %s\n", line, char_number, message);
+}
+
+void print_error_ln_if(int line, int char_number, char message[], bool condition)
+{
+    if (condition)
+    {
+        print_error_ln(line, char_number, message);
     }
 }
 
@@ -112,6 +125,7 @@ int main()
     next_char = '\0';
 
     int line_number = 1;
+    int char_number = 0;
 
     int num_parens = 0;
     int num_brackets = 0;
@@ -121,6 +135,15 @@ int main()
     {
         current_char = input[i];
         next_char = ((i == MAX_INPUT_LENGTH - 1) ? '\0' : input[i + 1]);
+
+        ++char_number;
+
+        if (current_char == '\n')
+        {
+            ++line_number;
+            char_number = 0;
+            continue;
+        }
 
         if (in_code())
         {
@@ -139,7 +162,7 @@ int main()
             else if (current_char == CLOSE_PARENTHESIS)
             {
                 --num_parens;
-                print_error_if(line_number, "too many closing parentheses", num_parens < 0);
+                print_error_ln_if(line_number, char_number, "too many closing parentheses", num_parens < 0);
             }
             else if (current_char == OPEN_BRACE)
             {
@@ -148,7 +171,7 @@ int main()
             else if (current_char == CLOSE_BRACE)
             {
                 --num_braces;
-                print_error_if(line_number, "too many closing braces", num_braces < 0);
+                print_error_ln_if(line_number, char_number, "too many closing braces", num_braces < 0);
             }
             else if (current_char == OPEN_BRACKET)
             {
@@ -157,7 +180,7 @@ int main()
             else if (current_char == CLOSE_BRACKET)
             {
                 --num_brackets;
-                print_error_if(line_number, "too many closing brackets", num_brackets < 0);
+                print_error_ln_if(line_number, char_number, "too many closing brackets", num_brackets < 0);
             }
         }
         else if (in_single_line_comment())
@@ -191,6 +214,10 @@ int main()
             }
         }
     }
+
+    print_error_if("parentheses are not balanced", num_parens != 0);
+    print_error_if("braces are not balanced", num_braces != 0);
+    print_error_if("brackets are not balanced", num_brackets != 0);
 
     return 0;
 }
