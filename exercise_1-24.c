@@ -90,12 +90,12 @@ bool in_multi_line_comment()
 
 bool in_string()
 {
-    return comment_state == IN_STRING;
+    return literal_state == IN_STRING;
 }
 
 bool in_character()
 {
-    return comment_state == IN_CHARACTER;
+    return literal_state == IN_CHARACTER;
 }
 
 bool start_of_single_line_comment()
@@ -130,6 +130,9 @@ int main()
     int num_parens = 0;
     int num_brackets = 0;
     int num_braces = 0;
+
+    bool string_escaped = false;
+    bool char_escaped = false;
 
     for (int i = 0; input[i] != '\0' && i < MAX_INPUT_LENGTH; ++i)
     {
@@ -182,6 +185,14 @@ int main()
                 --num_brackets;
                 print_error_ln_if(line_number, char_number, "too many closing brackets", num_brackets < 0);
             }
+            else if (current_char == '\"')
+            {
+                literal_state = IN_STRING;
+            }
+            else if (current_char == '\'')
+            {
+                literal_state = IN_CHARACTER;
+            }
         }
         else if (in_single_line_comment())
         {
@@ -199,16 +210,22 @@ int main()
         }
         else if (in_string())
         {
-            /* TODO: Support escaped double-quote ("\"") */
-            if (current_char == '"')
+            if (current_char == '\\')
+            {
+                string_escaped = !string_escaped;
+            }
+            else if (current_char == '\"' && !string_escaped)
             {
                 literal_state = NOT_IN_LITERAL;
             }
         }
         else if (in_character())
         {
-            /* TODO: Support escaped single-quote ('\'') */
-            if (current_char == '\'')
+            if (current_char == '\\')
+            {
+                char_escaped = !char_escaped;
+            }
+            else if (current_char == '\'' && !char_escaped)
             {
                 literal_state = NOT_IN_LITERAL;
             }
