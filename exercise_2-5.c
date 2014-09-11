@@ -33,5 +33,8 @@ int main()
 {
     /* Should return 3. */
     printf("any(\"baloon\", \"dog\") -> %d\n", any("baloon", "dog"));
+
+    /* Should return -1. */
+    printf("any(\"abc\", \"def\") -> %d\n", any("abc", "def"));
     return 0;
 }
