@@ -1,0 +1,22 @@
+x = 0011101
+
+------------
+x &= (x - 1)
+
+  0011101
+& 0011100
+= 0011100
+------------
+
+x = 0011100
+
+------------
+x &= (x - 1)
+
+  0011100
+& 0011010
+= 0011000
+------------
+
+Subtracting one from x moves the rightmost 1-bit one position to the right.
+Performing a bitwise AND with the original value of x removes this bit.
