@@ -1,0 +1,5 @@
+The itoa function does not handle the largest negative number because the largest
+possible negative number is greater than the largest positive number. When itoa 
+tries to make this number positive (num = -num), the number will overflow.
+I will fix this by casting the num to a long long int to ensure that it will
+not overflow.
