@@ -3,25 +3,27 @@
 
 #define MAX_LINE_LENGTH 1000
 
+enum
+{
+    NOT_FOUND = -1
+};
+
 int strrindex(char s[], char t[])
 {
-    int rightmost_index = -1;
-    int substr_index;
+    int rightmost_index = NOT_FOUND;
+    int substr_index = 0;
 
     for (int i = 0; s[i] != '\0'; ++i)
     {
-        for (int j = i, substr_index = 0; t[substr_index] != '\0' && s[j] == t[substr_index]; ++j, ++substr_index)
+        for (int j = i, substr_index = 0; s[j] == t[substr_index]; ++j, ++substr_index)
         {
-            ;
-        }
-
-        if ((substr_index > 0) && (t[substr_index] == '\0') && (i > rightmost_index))
-        {
-            rightmost_index = i;
+            if (substr_index == strlen(t) - 1)
+            {
+                rightmost_index = i;
+                break;
+            }
         }
     }
-
-    printf("%d\n", rightmost_index);
 
     return rightmost_index;
 }
@@ -50,14 +52,11 @@ int main()
 {
     char line[MAX_LINE_LENGTH] = { 0 };
 
-    char input[] = 
-        "Ah Love! could you and I with Fate conspire\nTo grasp this sorry Scheme of Things entire,\n"
-        "Would not we shatter it to bits -- and then\nRe-mould it nearer to the Heart's Desire!";
     char pattern[] = "ould";
     
     while (get_line(line, MAX_LINE_LENGTH) > 0)
     {
-        if (strrindex(line, pattern) >= 0)
+        if (strrindex(line, pattern) != NOT_FOUND)
         {
             puts(line);
         }
