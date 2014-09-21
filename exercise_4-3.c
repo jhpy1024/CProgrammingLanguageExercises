@@ -54,8 +54,7 @@ int main()
                 push(pop() * pop());
                 break;
             case DIVISION_OPERATOR:
-                tmp_operand = pop();
-                if (tmp_operand != 0.0)
+                if ((tmp_operand = pop()) != 0.0)
                 {
                     push(pop() / tmp_operand);
                 }
@@ -65,8 +64,7 @@ int main()
                 }
                 break;
             case MODULUS_OPERATOR:
-                tmp_operand = pop();
-                if (tmp_operand != 0.0)
+                if ((tmp_operand = pop()) != 0.0)
                 {
                     push((int) pop() % (int) tmp_operand);
                 }
@@ -126,7 +124,14 @@ int get_token(char token[])
 
     if (!isdigit(current_char) && current_char != '.')
     {
-        return current_char;
+        if (current_char == '-' && isdigit(current_char = getch()))
+        {
+            ungetch(current_char);
+        }
+        else
+        {
+            return current_char;
+        }
     }
 
     if (isdigit(current_char))
