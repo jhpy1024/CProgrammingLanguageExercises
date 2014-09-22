@@ -1,3 +1,4 @@
+#include <math.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
@@ -40,7 +41,7 @@ int get_token(char token[]);
 int getch();
 void ungetch(int c);
 
-bool str_equal(char s[], char t[]);
+bool str_equal(const char s[], const char t[]);
 
 int main()
 {
@@ -90,7 +91,23 @@ int main()
                 printf("\t%.8g\n", pop());
                 break;
             default:
-                printf("error: unknown token %s\n", token);
+                if (str_equal(token, SIN_OPERATOR))
+                {
+                    push(sin(pop()));
+                }
+                else if (str_equal(token, EXP_OPERATOR))
+                {
+                    push(exp(pop()));
+                }
+                else if (str_equal(token, POW_OPERATOR))
+                {
+                    tmp_operand = pop();
+                    push(pow(pop(), tmp_operand));
+                }
+                else
+                {
+                    printf("error: unknown token %s\n", token);
+                }
                 break;
         }
     }
@@ -135,16 +152,22 @@ int get_token(char token[])
 
     token[1] = '\0';
 
-    /* To support tokens such as sin, exp, and pow, we need to get the token rather than returning the first character. */
     if (!isdigit(current_char) && current_char != '.')
     {
+        /* If the next character is a digit then this is a negative number, not an operator. */
         if (current_char == '-' && isdigit(current_char = getch()))
         {
             ungetch(current_char);
         }
         else
         {
-            return current_char;
+            char tmp = current_char;
+            while (!isdigit(current_char = getch()) && current_char != '\t' && current_char != ' ' && current_char != '\n')
+            {
+                token[++token_index] = current_char;
+            }
+            token[++token_index] = '\0';
+            return tmp;
         }
     }
 
@@ -233,7 +256,7 @@ void clear_stack()
     stack_index = 0;
 }
 
-bool str_equal(char s[], char t[])
+bool str_equal(const char s[], const char t[])
 {
     if (strlen(s) != strlen(t))
     {
