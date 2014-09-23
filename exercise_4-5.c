@@ -17,6 +17,7 @@
 #define DIVISION_OPERATOR '/'
 #define MODULUS_OPERATOR '%'
 #define END_OF_EXPRESSION '\n'
+#define MULTI_CHAR_OPERATOR 'm'
 
 int stack_index = 0;
 double stack[MAX_STACK_DEPTH];
@@ -90,7 +91,7 @@ int main()
             case END_OF_EXPRESSION:
                 printf("\t%.8g\n", pop());
                 break;
-            default:
+            case MULTI_CHAR_OPERATOR:
                 if (str_equal(token, SIN_OPERATOR))
                 {
                     push(sin(pop()));
@@ -104,10 +105,9 @@ int main()
                     tmp_operand = pop();
                     push(pow(pop(), tmp_operand));
                 }
-                else
-                {
-                    printf("error: unknown token %s\n", token);
-                }
+                break;
+            default:
+                printf("error: unknown token %s\n", token);
                 break;
         }
     }
@@ -161,13 +161,16 @@ int get_token(char token[])
         }
         else
         {
-            char tmp = current_char;
-            while (!isdigit(current_char = getch()) && current_char != '\t' && current_char != ' ' && current_char != '\n')
+            while (isalpha(current_char = getch()))
             {
                 token[++token_index] = current_char;
             }
+            if (current_char != EOF)
+            {
+                ungetch(current_char);
+            }
             token[++token_index] = '\0';
-            return tmp;
+            return MULTI_CHAR_OPERATOR;
         }
     }
 
