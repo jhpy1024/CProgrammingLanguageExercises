@@ -1,9 +1,6 @@
-#include <math.h>
 #include <ctype.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
-#include <stdbool.h>
 
 #define MAX_TOKEN_SIZE 100
 #define MAX_STACK_DEPTH 100
@@ -17,17 +14,12 @@
 #define DIVISION_OPERATOR '/'
 #define MODULUS_OPERATOR '%'
 #define END_OF_EXPRESSION '\n'
-#define MULTI_CHAR_OPERATOR 'm'
 
 int stack_index = 0;
 double stack[MAX_STACK_DEPTH];
 
 char input_buffer[INPUT_BUFFER_SIZE];
 int input_buffer_index = 0;
-
-const char SIN_OPERATOR[] = "sin";
-const char EXP_OPERATOR[] = "exp";
-const char POW_OPERATOR[] = "pow";
 
 void push(double value);
 double pop();
@@ -41,8 +33,6 @@ int get_token(char token[]);
 
 int getch();
 void ungetch(int c);
-
-bool str_equal(const char s[], const char t[]);
 
 int main()
 {
@@ -90,21 +80,6 @@ int main()
                 break;
             case END_OF_EXPRESSION:
                 printf("\t%.8g\n", pop());
-                break;
-            case MULTI_CHAR_OPERATOR:
-                if (str_equal(token, SIN_OPERATOR))
-                {
-                    push(sin(pop()));
-                }
-                else if (str_equal(token, EXP_OPERATOR))
-                {
-                    push(exp(pop()));
-                }
-                else if (str_equal(token, POW_OPERATOR))
-                {
-                    tmp_operand = pop();
-                    push(pow(pop(), tmp_operand));
-                }
                 break;
             default:
                 printf("error: unknown token %s\n", token);
@@ -154,23 +129,13 @@ int get_token(char token[])
 
     if (!isdigit(current_char) && current_char != '.')
     {
-        /* If the next character is a digit then this is a negative number, not an operator. */
         if (current_char == '-' && isdigit(current_char = getch()))
         {
             ungetch(current_char);
         }
         else
         {
-            while (isalpha(current_char = getch()))
-            {
-                token[++token_index] = current_char;
-            }
-            if (current_char != EOF)
-            {
-                ungetch(current_char);
-            }
-            token[++token_index] = '\0';
-            return MULTI_CHAR_OPERATOR;
+            return current_char;
         }
     }
 
@@ -257,22 +222,4 @@ void clear_stack()
     }
 
     stack_index = 0;
-}
-
-bool str_equal(const char s[], const char t[])
-{
-    if (strlen(s) != strlen(t))
-    {
-        return false;
-    }
-
-    for (int i = 0; i < strlen(s); ++i)
-    {
-        if (s[i] != t[i])
-        {
-            return false;
-        }
-    }
-
-    return true;
 }
