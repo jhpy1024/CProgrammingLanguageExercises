@@ -19,7 +19,7 @@ int main()
     char t[100] = "is a test";
 
     printf("\"%s\" + \"%s\"\n", s, t);
-    strcat(s, t);
+    my_strcat(s, t);
     printf("= \"%s\"\n", s);
 
     return 0;
