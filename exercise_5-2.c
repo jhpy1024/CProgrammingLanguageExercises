@@ -24,10 +24,12 @@ void ungetch(int c)
     }
 }
 
-int get_int(int* i)
+int get_float(float* f)
 {
     int current_char;
     int sign;
+
+    int fractional_power = 1;
 
     while (isspace(current_char = getch()))
     {
@@ -57,12 +59,23 @@ int get_int(int* i)
         ungetch(current_char);
     }
 
-    for (*i = 0; isdigit(current_char); current_char = getch())
+    for (*f = 0.f; isdigit(current_char = getch());)
     {
-        *i = *i * 10 + (current_char - '0');
+        *f = *f * 10.f + (current_char - '0');
     }
 
-    *i *= sign;
+    if (current_char == '.')
+    {
+        current_char = getch();
+        for (; isdigit(current_char); current_char = getch())
+        {
+            *f = *f * 10.f + (current_char - '0');
+            fractional_power *= 10;
+        }
+    }
+
+    *f /= fractional_power;
+    *f *= sign;
 
     if (current_char != EOF)
     {
@@ -74,15 +87,15 @@ int get_int(int* i)
 
 int main()
 {
-    int a;
+    float a;
 
-    if (get_int(&a))
+    if (get_float(&a))
     {
-        printf("%d\n", a);
+        printf("%g\n", a);
     }
     else
     {
-        printf("error occured when reading integer\n");
+        printf("error occured when reading float\n");
     }
 
     return 0;
