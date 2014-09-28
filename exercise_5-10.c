@@ -1,5 +1,6 @@
 #include <ctype.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define MAX_TOKEN_SIZE 100
@@ -10,7 +11,13 @@ enum type
 {
     ADDITION_OPERATOR = '+',
     SUBTRACTION_OPERATOR = '-',
-    MULTIPLICATION_OPERATOR = '*',
+
+    /*
+     * I use 'x' instead of '*' as using '*' in the bash terminal passes all the files in the
+     * current directory as input to the program, which is obviously not what is wanted.
+     * However this behaviour can be avoided by escaping the asterick like so: '\*'.
+     */
+    MULTIPLICATION_OPERATOR = 'x',
     DIVISION_OPERATOR = '/',
     NUMBER = '0',
     NO_MORE_TOKENS = EOF
@@ -89,7 +96,37 @@ int get_token(char* input, char* token)
 
 double evaluate_expression(char* input)
 {
+    int type;
+    char token[MAX_TOKEN_SIZE];
 
+    double tmp_operand;
+
+    while ((type = get_token(input, token)) != NO_MORE_TOKENS)
+    {
+        switch (type)
+        {
+            case NUMBER:
+                push(atof(token));
+                break;
+            case ADDITION_OPERATOR:
+                push(pop() + pop());
+                break;
+            case SUBTRACTION_OPERATOR:
+                tmp_operand = pop();
+                push(pop() - tmp_operand);
+                break;
+            case MULTIPLICATION_OPERATOR:
+                push(pop() * pop());
+                break;
+            case DIVISION_OPERATOR:
+                tmp_operand = pop();
+                push(pop() / tmp_operand);
+                break;
+            default:
+                printf("unknown token: %s\n", token);
+                break;
+        }
+    }
 }
 
 int main(int argc, char* argv[])
@@ -119,32 +156,8 @@ int main(int argc, char* argv[])
     int type;
     char token[MAX_TOKEN_SIZE];
 
-    while ((type = get_token(input, token)) != NO_MORE_TOKENS)
-    {
-        switch (type)
-        {
-            case NUMBER:
-                /* printf("number: %s\n", token); */
-                break;
-            case ADDITION_OPERATOR:
-                /* printf("addition\n"); */
-                break;
-            case SUBTRACTION_OPERATOR:
-                /* printf("subtraction\n"); */
-                break;
-            case MULTIPLICATION_OPERATOR:
-                /* printf("multiplication\n"); */
-                break;
-            case DIVISION_OPERATOR:
-                /* printf("division\n"); */
-                break;
-            default:
-                break;
-        }
-    }
-
-    /* double result = evaluate_expression(input); */
-    /* printf("\t%g\n", result); */
+    double result = evaluate_expression(input);
+    printf("%g\n", result);
 
     return 0;
 }
