@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#define MAX_TOKEN_SIZE 100
 #define MAX_INPUT_SIZE 1000
 #define STACK_SIZE 1000
 
@@ -10,7 +11,9 @@ enum type
     ADDITION_OPERATOR = '+',
     SUBTRACTION_OPERATOR = '-',
     MULTIPLICATION_OPERATOR = '*',
-    DIVISION_OPERATOR = '/'
+    DIVISION_OPERATOR = '/',
+    NUMBER = '0',
+    NO_MORE_TOKENS = EOF
 };
 
 static double stack[STACK_SIZE];
@@ -38,9 +41,50 @@ double pop()
     return stack[--stack_index];
 }
 
-int get_token(char* input)
+int get_token(char* input, char* token)
 {
-    
+    static int input_index = 0;
+
+    while (isspace(input[input_index]))
+    {
+        /* Skip whitespace. */
+        ++input_index;
+    }
+
+    if (input[input_index] == '\0')
+    {
+        return NO_MORE_TOKENS;
+    }
+
+    if (!isdigit(input[input_index]) && input[input_index] != '.')
+    {
+        return input[input_index];
+    }
+
+    if (isdigit(input[input_index]))
+    {
+        while (isdigit(*token++ = input[input_index++]))
+        {
+            /* Collect integer part. */
+        }
+
+        if (input[input_index] == '.')
+        {
+            while (isdigit(*token++ = input[input_index++]))
+            {
+                /* Collect fractional part. */
+            }
+        }
+    }
+
+    *token = '\0';
+
+    if (input[input_index] != EOF)
+    {
+        --input_index;
+    }
+
+    return NUMBER;
 }
 
 double evaluate_expression(char* input)
@@ -71,9 +115,36 @@ int main(int argc, char* argv[])
             strcat(input, argv[i]);
         }
     }
+    
+    int type;
+    char token[MAX_TOKEN_SIZE];
 
-    double result = evaluate_expression(input);
-    printf("\t%g\n", result);
+    while ((type = get_token(input, token)) != NO_MORE_TOKENS)
+    {
+        switch (type)
+        {
+            case NUMBER:
+                /* printf("number: %s\n", token); */
+                break;
+            case ADDITION_OPERATOR:
+                /* printf("addition\n"); */
+                break;
+            case SUBTRACTION_OPERATOR:
+                /* printf("subtraction\n"); */
+                break;
+            case MULTIPLICATION_OPERATOR:
+                /* printf("multiplication\n"); */
+                break;
+            case DIVISION_OPERATOR:
+                /* printf("division\n"); */
+                break;
+            default:
+                break;
+        }
+    }
+
+    /* double result = evaluate_expression(input); */
+    /* printf("\t%g\n", result); */
 
     return 0;
 }
