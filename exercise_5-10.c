@@ -58,7 +58,7 @@ int get_token(char* input, char* token)
 
     if (!isdigit(input[input_index]) && input[input_index] != '.')
     {
-        return input[input_index];
+        return input[input_index++];
     }
 
     if (isdigit(input[input_index]))
