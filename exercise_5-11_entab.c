@@ -1,10 +1,13 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
 
 #define TAB '\t'
 #define SPACE ' '
 #define NEWLINE '\n'
 #define TAB_WIDTH 4
+
+#define MAX_NUM_TABSTOPS 100
 
 int count_num_spaces(int* current_char)
 {
@@ -18,10 +21,31 @@ int count_num_spaces(int* current_char)
     return num_spaces;
 }
 
-int main()
+int get_tabstops(int argc, char* argv[], int tabstops[])
+{
+    for (int i = 1; i < argc; ++i)
+    {
+        tabstops[i - 1] = atoi(argv[i]);
+    }
+
+    return argc - 1;
+}
+
+int main(int argc, char* argv[])
 {
     int current_char = EOF;
     int char_position = 0;
+
+    bool has_args = argc > 1;
+
+    int tabstops[MAX_NUM_TABSTOPS];
+    int tabstop_index = 0;
+    int num_tabstops = 0;
+
+    if (has_args)
+    {
+        num_tabstops = get_tabstops(argc, argv, tabstops);
+    }
 
     while ((current_char = getchar()) != EOF)
     {
@@ -29,11 +53,22 @@ int main()
         {
             int num_spaces = count_num_spaces(&current_char);
 
-            while (num_spaces >= TAB_WIDTH)
+            int tabstop;
+            if (has_args)
             {
-                num_spaces -= TAB_WIDTH;
+                tabstop = (tabstop_index == 0 ? tabstops[tabstop_index] : tabstops[tabstop_index] - tabstops[tabstop_index - 1]);
+                ++tabstop_index;
+            }
+            else
+            {
+                tabstop = TAB_WIDTH;
+            }
+
+            while (num_spaces >= tabstop)
+            {
+                num_spaces -= tabstop;
                 putchar(TAB);
-                char_position += TAB_WIDTH;
+                char_position += tabstop;
             }
 
             while (num_spaces > 0)
@@ -44,11 +79,6 @@ int main()
             }
         }
 
-        /*
-         * We don't use an else if statement here because when counting the number
-         * of spaces above, we change current_char. If we used an else if statement and current_char
-         * had been changed to a newline, the code to handle that newline would not be executed.
-         */
         if (current_char == NEWLINE)
         {
             char_position = 0;
