@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#define SORT_NUMERICALLY "-n"
+#define SORT_REVERSE "-r"
+
 enum
 {
     MAX_NUM_LINES = 5000,
@@ -79,18 +82,18 @@ void write_lines(char* lines[], int num_lines)
     }
 }
 
-int numeric_cmp(char* a, char* b)
+int numeric_cmp(char* a, char* b, bool reverse)
 {
     double a_val = atof(a);
     double b_val = atof(b);
 
     if (a_val < b_val)
     {
-        return -1;
+        return (reverse ? 1 : -1);
     }
     else if (a_val > b_val)
     {
-        return 1;
+        return (reverse ? -1 : 1);
     }
     else
     {
@@ -98,7 +101,7 @@ int numeric_cmp(char* a, char* b)
     }
 }
 
-int lexicographic_cmp(char* a, char* b)
+int lexicographic_cmp(char* a, char* b, bool reverse)
 {
     int index;
 
@@ -110,7 +113,7 @@ int lexicographic_cmp(char* a, char* b)
         }
     }
 
-    return a[index] - b[index];
+    return (reverse ? b[index] - a[index] : a[index] - b[index]);
 }
 
 void swap(void* v[], int i, int j)
@@ -120,7 +123,7 @@ void swap(void* v[], int i, int j)
     v[j] = tmp;
 }
 
-void quick_sort(void* v[], int left, int right, int (*cmp)(void*, void*))
+void quick_sort(void* v[], int left, int right, int (*cmp)(void*, void*, bool), bool reverse)
 {
     int index;
     int last;
@@ -135,15 +138,15 @@ void quick_sort(void* v[], int left, int right, int (*cmp)(void*, void*))
 
     for (index = left + 1; index <= right; ++index)
     {
-        if ((*cmp)(v[index], v[left]) < 0)
+        if ((*cmp)(v[index], v[left], reverse) < 0)
         {
             swap(v, ++last, index);
         }
     }
 
     swap(v, left, last);
-    quick_sort(v, left, last - 1, cmp);
-    quick_sort(v, last + 1, right, cmp);
+    quick_sort(v, left, last - 1, cmp, reverse);
+    quick_sort(v, last + 1, right, cmp, reverse);
 }
 
 int main(int argc, char* argv[])
@@ -152,15 +155,27 @@ int main(int argc, char* argv[])
     char* lines[MAX_NUM_LINES];
 
     bool sort_numerically = false;
+    bool sort_reverse = false;
 
-    if (argc > 1 && strcmp(argv[1], "-n") == 0)
+    if (argc > 1)
     {
-        sort_numerically = true;
+        for (int i = 1; i < argc; ++i)
+        {
+            if (strcmp(argv[i], SORT_NUMERICALLY) == 0)
+            {
+                sort_numerically = true;
+            }
+            else if (strcmp(argv[i], SORT_REVERSE) == 0)
+            {
+                sort_reverse = true;
+            }
+        }
     }
 
     if ((num_lines = read_lines(lines)) >= 0)
     {
-        quick_sort((void**) lines, 0, num_lines - 1, (int(*)(void*, void*))(sort_numerically ? numeric_cmp : lexicographic_cmp));
+        quick_sort((void**) lines, 0, num_lines - 1,
+            (int(*)(void*, void*, bool))(sort_numerically ? numeric_cmp : lexicographic_cmp), sort_reverse);
         write_lines(lines, num_lines);
         return 0;
     }
