@@ -1,6 +1,8 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 enum
 {
@@ -87,13 +89,20 @@ void parse_args(int argc, char* argv[], int* num_lines_to_print)
                 return;
             }
 
+            if (!isdigit(argv[i][1]))
+            {
+                printf("error: non-numerical argument. using default value of %d\n", DEFAULT_NUM_LINES);
+                *num_lines_to_print = DEFAULT_NUM_LINES;
+                return;
+            }
+
             int arg_index;
             for (arg_index = 1; arg_index < strlen(argv[i]); ++arg_index)
             {
                 arg[arg_index - 1] = argv[i][arg_index];
             }
-
             arg[++arg_index] = '\0';
+
             break;
         }
     }
@@ -103,9 +112,6 @@ void parse_args(int argc, char* argv[], int* num_lines_to_print)
 
 int main(int argc, char* argv[])
 {
-    char* lines[MAX_NUM_INPUT_LINES];
-    int num_lines = read_lines(lines);
-
     int num_lines_to_print;
     if (argc > 1)
     {
@@ -115,6 +121,10 @@ int main(int argc, char* argv[])
     {
         num_lines_to_print = DEFAULT_NUM_LINES;
     }
+
+    char* lines[MAX_NUM_INPUT_LINES];
+    int num_lines = read_lines(lines);
+
 
     if (num_lines < num_lines_to_print)
     {
