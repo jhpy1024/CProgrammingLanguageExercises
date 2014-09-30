@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 enum
@@ -6,7 +7,8 @@ enum
     DEFAULT_NUM_LINES = 5,
     MAX_NUM_INPUT_LINES = 10000,
     MAX_LINE_LENGTH = 1000,
-    BUFFER_SIZE = 10000
+    BUFFER_SIZE = 10000,
+    MAX_ARG_SIZE = 100
 };
 
 static char alloc_buffer[BUFFER_SIZE];
@@ -27,16 +29,22 @@ char* alloc(int n)
 
 int get_line(char line[])
 {
-    char current_char;
+    int current_char;
+    int index = 0;
 
-    int i;
-    for (i = 0; (current_char = getchar()) != '\n'; ++i)
+    while (index < MAX_LINE_LENGTH && (current_char = getchar()) != EOF && current_char != '\n')
     {
-        line[i] = current_char;
+        line[index++] = current_char;
     }
-    line[i] = '\0';
 
-    return i;
+    if (current_char == '\n')
+    {
+        line[index++] = current_char;
+    }
+
+    line[index] = '\0';
+
+    return index;
 }
 
 int read_lines(char* lines[])
@@ -55,7 +63,7 @@ int read_lines(char* lines[])
         }
         else
         {
-            line[line_length] = '\0';
+            line[line_length - 1] = '\0';
             strcpy(line_ptr, line);
             lines[num_lines++] = line_ptr;
         }
@@ -64,18 +72,58 @@ int read_lines(char* lines[])
     return num_lines;
 }
 
+void parse_args(int argc, char* argv[], int* num_lines_to_print)
+{
+    char arg[MAX_ARG_SIZE] = { 0 };
+
+    for (int i = 1; i < argc; ++i)
+    {
+        if (argv[i][0] == '-')
+        {
+            if (strlen(argv[i]) >= MAX_ARG_SIZE)
+            {
+                printf("error: argument too large. using default value of %d\n", DEFAULT_NUM_LINES);
+                *num_lines_to_print = DEFAULT_NUM_LINES;
+                return;
+            }
+
+            int arg_index;
+            for (arg_index = 1; arg_index < strlen(argv[i]); ++arg_index)
+            {
+                arg[arg_index - 1] = argv[i][arg_index];
+            }
+
+            arg[++arg_index] = '\0';
+            break;
+        }
+    }
+
+    *num_lines_to_print = atoi(arg);
+}
+
 int main(int argc, char* argv[])
 {
     char* lines[MAX_NUM_INPUT_LINES];
     int num_lines = read_lines(lines);
 
-    if (num_lines < DEFAULT_NUM_LINES)
+    int num_lines_to_print;
+    if (argc > 1)
+    {
+        parse_args(argc, argv, &num_lines_to_print);
+    }
+    else
+    {
+        num_lines_to_print = DEFAULT_NUM_LINES;
+    }
+
+    if (num_lines < num_lines_to_print)
     {
         printf("error: not enough lines to print.\n");
     }
     else
     {
-        for (int i = num_lines - DEFAULT_NUM_LINES; i < DEFAULT_NUM_LINES; ++i)
+        printf("num: %d\tto print: %d\n", num_lines, num_lines_to_print);
+        for (int i = num_lines - num_lines_to_print; i < num_lines; ++i)
         {
             printf("(%d) %s\n", i, lines[i]);
         }
