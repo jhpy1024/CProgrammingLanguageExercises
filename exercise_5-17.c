@@ -41,6 +41,25 @@ char* alloc(int n)
     }
 }
 
+char* str_dup(char* str)
+{
+    char* dup_str = alloc(strlen(str) + 1);
+
+    if (dup_str == NULL)
+    {
+        return NULL;
+    }
+
+    int index;
+    for (index = 0; index < strlen(str); ++index)
+    {
+        dup_str[index] = str[index];
+    }
+    dup_str[index] = '\0';
+
+    return dup_str;
+}
+
 int split_str(char* str, char* tokens[])
 {
     int num_tokens = 0;
@@ -159,19 +178,51 @@ bool lexicographically_equal(char a, char b)
     return a == b;
 }
 
-int lexicographic_cmp(char* a, char* b)
+int lexicographic_cmp_field(char* a, char* b)
 {
-    int index;
+    char* a_tokens[MAX_NUM_TOKENS];
+    char* b_tokens[MAX_NUM_TOKENS];
 
-    for (index = 0; lexicographically_equal(a[index], b[index]); ++index)
+    char* a_dup = str_dup(a);
+    char* b_dup = str_dup(b);
+    split_str(a_dup, a_tokens);
+    split_str(b_dup, b_tokens);
+
+    char* a_str = a_tokens[field];
+    char* b_str = b_tokens[field];
+
+    int index;
+    for (index = 0; lexicographically_equal(a_str[index], b_str[index]); ++index)
     {
-        if (a[index] == '\0')
+        if (a_str[index] == '\0')
         {
             return 0;
         }
     }
 
-    return (sort_reverse ? b[index] - a[index] : a[index] - b[index]);
+    return (sort_reverse ? b_str[index] - a_str[index] : a_str[index] - b_str[index]);
+}
+
+int lexicographic_cmp(char* a, char* b)
+{
+    if (sort_by_field)
+    {
+        return lexicographic_cmp_field(a, b);
+    }
+    else
+    {
+        int index;
+
+        for (index = 0; lexicographically_equal(a[index], b[index]); ++index)
+        {
+            if (a[index] == '\0')
+            {
+                return 0;
+            }
+        }
+
+        return (sort_reverse ? b[index] - a[index] : a[index] - b[index]);
+    }
 }
 
 void swap(void* v[], int i, int j)
@@ -214,14 +265,6 @@ int main(int argc, char* argv[])
 
     bool sort_numerically = false;
 
-    char test[] = "this is a test";
-    char* tokens[MAX_NUM_TOKENS];
-    int num = split_str(test, tokens);
-    for (int i = 0; i < num; ++i)
-    {
-        printf("(%d) %s\n", i, tokens[i]);
-    }
-
     if (argc > 1)
     {
         for (int i = 1; i < argc; ++i)
@@ -247,6 +290,7 @@ int main(int argc, char* argv[])
                 }
                 else
                 {
+                    sort_by_field = true;
                     field = atoi(argv[++i]);
                 }
             }
