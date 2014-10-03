@@ -1,5 +1,6 @@
 #include <ctype.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 enum
 {
@@ -27,6 +28,17 @@ void ungetch(int chr)
     }
 }
 
+bool first_char_valid(int chr)
+{
+    return (isalnum(chr) || chr == '_');
+}
+
+/*
+ * The book is unclear on the desired behaviour of this function when 
+ * the input is a string constant. Given the context of this 
+ * exercise (C keyword counting program), I assume that words inside
+ * string literals should be ignored.
+ */
 int get_word(char* word, int max_length)
 {
     int current_char;
@@ -42,7 +54,7 @@ int get_word(char* word, int max_length)
         *word_cpy++ = current_char;
     }
 
-    if (!isalpha(current_char))
+    if (!first_char_valid(current_char))
     {
         *word_cpy = '\0';
         return current_char;
@@ -50,7 +62,7 @@ int get_word(char* word, int max_length)
 
     for (; --max_length > 0; ++word_cpy)
     {
-        if (!isalnum(*word_cpy = getch()))
+        if (!(isalnum(*word_cpy = getch()) || *word_cpy == '_'))
         {
             ungetch(*word_cpy);
             break;
