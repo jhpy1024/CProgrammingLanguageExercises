@@ -1,5 +1,6 @@
 #include <ctype.h>
 #include <stdio.h>
+#include <string.h>
 #include <stdbool.h>
 
 enum
@@ -41,35 +42,48 @@ bool first_char_valid(int chr)
  */
 int get_word(char* word, int max_length)
 {
+    static bool in_string_literal = false;
+
     int current_char;
-    char* word_cpy = word;
+    char* word_ptr = word;
 
     while (isspace(current_char = getch()))
     {
         /* Skip whitespace. */
     }
 
-    if (current_char != EOF)
+    if (current_char == '\"')
     {
-        *word_cpy++ = current_char;
+        *word_ptr = '\0';
+        in_string_literal = !in_string_literal;
+        return word[0];
+    }
+    else if (in_string_literal)
+    {
+        *word_ptr = '\0';
+        return word[0];
+    }
+    else if (current_char != EOF)
+    {
+        *word_ptr++ = current_char;
     }
 
     if (!first_char_valid(current_char))
     {
-        *word_cpy = '\0';
+        *word_ptr = '\0';
         return current_char;
     }
 
-    for (; --max_length > 0; ++word_cpy)
+    for (; --max_length > 0; ++word_ptr)
     {
-        if (!(isalnum(*word_cpy = getch()) || *word_cpy == '_'))
+        if (!(isalnum(*word_ptr = getch()) || *word_ptr == '_'))
         {
-            ungetch(*word_cpy);
+            ungetch(*word_ptr);
             break;
         }
     }
 
-    *word_cpy = '\0';
+    *word_ptr = '\0';
     return word[0];
 }
 
@@ -79,7 +93,10 @@ int main()
 
     while (get_word(word, MAX_WORD_LENGTH) != EOF)
     {
-        puts(word);
+        if (strlen(word) > 0)
+        {
+            puts(word);
+        }
     }
 
     return 0;
