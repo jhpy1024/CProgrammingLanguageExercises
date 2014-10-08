@@ -44,6 +44,7 @@ int get_word(char* word, int max_length)
 {
     static bool in_string_literal = false;
     static bool in_multiline_comment = false;
+    static bool in_singleline_comment = false;
 
     int current_char;
     char* word_ptr = word;
@@ -73,6 +74,16 @@ int get_word(char* word, int max_length)
         *word_ptr = '\0';
         return word[0];
     }
+    else if (in_singleline_comment)
+    {
+        if (current_char == '\n')
+        {
+            in_singleline_comment = false;
+        }
+
+        *word_ptr = '\0';
+        return word[0];
+    }
     else if (current_char == '\"')
     {
         *word_ptr = '\0';
@@ -85,6 +96,10 @@ int get_word(char* word, int max_length)
         if (next_char == '*')
         {
             in_multiline_comment = true;
+        }
+        else if (next_char == '/')
+        {
+            in_singleline_comment = true;
         }
         else
         {
