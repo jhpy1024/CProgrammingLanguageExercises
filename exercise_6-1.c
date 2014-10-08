@@ -43,6 +43,7 @@ bool first_char_valid(int chr)
 int get_word(char* word, int max_length)
 {
     static bool in_string_literal = false;
+    static bool in_multiline_comment = false;
 
     int current_char;
     char* word_ptr = word;
@@ -52,14 +53,44 @@ int get_word(char* word, int max_length)
         /* Skip whitespace. */
     }
 
-    if (current_char == '\"')
+    if (in_string_literal)
+    {
+        *word_ptr = '\0';
+        return word[0];
+    }
+    else if (in_multiline_comment)
+    {
+        char next_char = getch();
+        if (current_char == '*' && next_char == '/')
+        {
+            in_multiline_comment = false;
+        }
+        else
+        {
+            ungetch(next_char);
+        }
+
+        *word_ptr = '\0';
+        return word[0];
+    }
+    else if (current_char == '\"')
     {
         *word_ptr = '\0';
         in_string_literal = !in_string_literal;
         return word[0];
     }
-    else if (in_string_literal)
+    else if (current_char == '/')
     {
+        char next_char = getch();
+        if (next_char == '*')
+        {
+            in_multiline_comment = true;
+        }
+        else
+        {
+            ungetch(next_char);
+        }
+
         *word_ptr = '\0';
         return word[0];
     }
