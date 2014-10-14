@@ -142,13 +142,14 @@ int get_word(char* word, int max_length)
     return word[0];
 }
 
-void create_key(char* word)
+void create_key(char* word, int line_number)
 {
     struct key* k = malloc(sizeof(struct key));
 
-    k->word = malloc(sizeof(word));
+    k->word = malloc(strlen(word) + 1);
     strcpy(k->word, word);
     k->num_occurences = 1;
+    k->line_numbers[0] = line_number;
 
     words[num_words++] = k;
 }
@@ -183,7 +184,7 @@ int main()
         struct key* key;
         if ((key = binary_search(word)) == NULL)
         {
-            create_key(word);
+            create_key(word, line_number);
         }
         else
         {
