@@ -17,13 +17,13 @@ struct key
     char* word;
     int line_numbers[MAX_NUM_OCCURENCES];
     int num_occurences;
+
+    struct key* left;
+    struct key* right;
 };
 
 static int getch_buffer[GETCH_BUFFER_SIZE];
 static int getch_index = 0;
-
-struct key* words[MAX_NUM_WORDS];
-int num_words = 0;
 
 int getch()
 {
@@ -40,40 +40,6 @@ void ungetch(int chr)
     {
         getch_buffer[getch_index++] = chr;
     }
-}
-
-struct key* binary_search(char* word)
-{
-    if (num_words == 0)
-    {
-        return NULL;
-    }
-
-    struct key* low = words[0];
-    struct key* high = words[num_words - 1];
-    struct key* mid;
-
-    int comparison;
-
-    while (low <= high)
-    {
-        mid = low + (high - low) / 2;
-
-        if ((comparison = strcmp(word, mid->word)) < 0)
-        {
-            high = mid - 1;
-        }
-        else if (comparison > 0)
-        {
-            low = mid + 1;
-        }
-        else
-        {
-            return mid;
-        }
-    }
-
-    return NULL;
 }
 
 bool is_ignored_word(char* word)
@@ -142,23 +108,69 @@ int get_word(char* word, int max_length)
     return word[0];
 }
 
-void create_key(char* word, int line_number)
+struct key* alloc_node()
 {
-    struct key* k = malloc(sizeof(struct key));
-
-    k->word = malloc(strlen(word) + 1);
-    strcpy(k->word, word);
-    k->num_occurences = 1;
-    k->line_numbers[0] = line_number;
-
-    words[num_words++] = k;
+    return malloc(sizeof(struct key));
 }
 
-void cleanup()
+struct key* add_to_tree(struct key* node, char* word, int line_number)
 {
-    for (int i = 0; i < num_words; ++i)
+    int comparison;
+
+    if (node == NULL)
     {
-        free(words[i]);
+        node = alloc_node();
+        node->word = malloc(strlen(word) + 1);
+        strcpy(node->word, word);
+        node->num_occurences = 1;
+        node->line_numbers[0] = line_number;
+        node->left = NULL;
+        node->right = NULL;
+    }
+    else if ((comparison = strcmp(word, node->word)) < 0)
+    {
+        node->left = add_to_tree(node->left, word, line_number);
+    }
+    else
+    {
+        node->right = add_to_tree(node->right, word, line_number);
+    }
+
+    return node;
+}
+
+struct key* get_node(struct key* root, char* word)
+{
+    if (root == NULL)
+    {
+        return NULL;
+    }
+
+    int comparison;
+    if ((comparison = strcmp(word, root->word)) < 0)
+    {
+        return get_node(root->left, word);
+    }
+    else if (comparison > 0)
+    {
+        return get_node(root->right, word);
+    }
+    else
+    {
+        return root;
+    }
+}
+
+void print_words(struct key* root)
+{
+    if (root != NULL)
+    {
+        print_words(root->left);
+        for (int i = 0; i < root->num_occurences; ++i)
+        {
+            printf("%-3d %s\n", root->line_numbers[i], root->word);
+        }
+        print_words(root->right);
     }
 }
 
@@ -167,6 +179,8 @@ int main()
     char word[MAX_WORD_LENGTH];
 
     int line_number = 1;
+
+    struct key* node = NULL;
 
     while (get_word(word, MAX_WORD_LENGTH) != EOF)
     {
@@ -182,9 +196,9 @@ int main()
         }
 
         struct key* key;
-        if ((key = binary_search(word)) == NULL)
+        if ((key = get_node(node, word)) == NULL)
         {
-            create_key(word, line_number);
+            node = add_to_tree(node, word, line_number);
         }
         else
         {
@@ -192,16 +206,7 @@ int main()
         }
     }
 
-    for (int i = 0; i < num_words; ++i)
-    {
-        struct key* key = words[i];
+    print_words(node);
 
-        for (int j = 0; j < key->num_occurences; ++j)
-        {
-            printf("%-5d %s\n", key->line_numbers[j], key->word);
-        }
-    }
-
-    cleanup();
     return 0;
 }
