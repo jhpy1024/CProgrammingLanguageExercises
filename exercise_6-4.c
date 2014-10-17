@@ -126,14 +126,14 @@ struct key* get_node(struct key* root, char* word)
     }
 }
 
-void word_swap(char* words[], int i, int j)
+void key_swap(struct key keys[], int i, int j)
 {
-    char* tmp = words[i];
-    words[i] = words[j];
-    words[j] = tmp;
+    struct key tmp = keys[i];
+    keys[i] = keys[j];
+    keys[j] = tmp;
 }
 
-void sort_array(char* words[], int left, int right)
+void sort_array(struct key keys[], int left, int right)
 {
     int last;
 
@@ -142,45 +142,42 @@ void sort_array(char* words[], int left, int right)
         return;
     }
 
-    word_swap(words, left, (left + right) / 2);
+    key_swap(keys, left, (left + right) / 2);
     last = left;
     for (int i = left + 1; i <= right; ++i)
     {
-        if (strcmp(words[i], words[left]) < 0)
+        if (keys[i].num_occurences > keys[left].num_occurences)
         {
-            word_swap(words, ++last, i);
+            key_swap(keys, ++last, i);
         }
     }
 
-    word_swap(words, left, last);
-    sort_array(words, left, last - 1);
-    sort_array(words, last + 1, right);
+    key_swap(keys, left, last);
+    sort_array(keys, left, last - 1);
+    sort_array(keys, last + 1, right);
 }
 
-void binary_tree_to_array(char* words[], struct key* root, int index)
+void binary_tree_to_array(struct key keys[], struct key* root)
 {
-    if (root == NULL)
-    {
-        binary_tree_to_array(words, root->left, index);
-        
-        words[index] = malloc(strlen(root->word) + 1);
-        strcpy(words[index], root->word);
-        ++index;
+    static int index = 0;
 
-        binary_tree_to_array(words, root->right, index);
+    if (root != NULL)
+    {
+        binary_tree_to_array(keys, root->left);
+        keys[index++] = *root;
+        binary_tree_to_array(keys, root->right);
     }
 }
 
 void print_words(struct key* root, int num_words)
 {
-    /* Don't store strings, store keys, dummy! */
-    char* words[MAX_NUM_WORDS];
-    binary_tree_to_array(root, words, 0);
-    sort_array(words, 0, num_words);
+    struct key keys[MAX_NUM_WORDS];
+    binary_tree_to_array(keys, root);
+    sort_array(keys, 0, num_words - 1);
 
     for (int i = 0; i < num_words; ++i)
     {
-        printf
+        printf("%-3d %s\n", keys[i].num_occurences, keys[i].word);
     }
 }
 
