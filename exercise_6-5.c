@@ -31,7 +31,7 @@ unsigned hash(char* str)
 {
     unsigned hash_value;
 
-    for (hash_value; *str != '\0'; ++str)
+    for (hash_value = 0; *str != '\0'; ++str)
     {
         hash_value = *str + 31 * hash_value;
     }
@@ -41,9 +41,7 @@ unsigned hash(char* str)
 
 struct list* lookup(char* str)
 {
-    struct list* node = hash_table[hash(str)];
-
-    for (; node != NULL; node = node->next)
+    for (struct list* node = hash_table[hash(str)]; node != NULL; node = node->next)
     {
         if (strcmp(str, node->name) == 0)
         {
@@ -106,6 +104,8 @@ int main()
 {
     define("foo", "bar");
     printf("%s\n", lookup("foo") == NULL ? "not exist" : "exist");
+    printf("%s\n", lookup("foo") == NULL ? "not exist" : "exist");
+    undefine("foo");
     printf("%s\n", lookup("foo") == NULL ? "not exist" : "exist");
     return 0;
 }
