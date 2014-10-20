@@ -85,9 +85,21 @@ struct list* define(char* name, char* replacement)
 
 void undefine(char* name)
 {
-    struct list* node = hash_table[hash(name)];
+    unsigned hash_value = hash(name);
+
+    struct list* node = hash_table[hash_value];
     if (node == NULL)
     {
+        return;
+    }
+
+    /*
+     * The first node is the one we need to remove. The for loop below
+     * won't find this so we have to do it here.
+     */
+    if (strcmp(name, node->name) == 0)
+    {
+        hash_table[hash_value] = NULL;
         return;
     }
 
@@ -96,6 +108,7 @@ void undefine(char* name)
         if (strcmp(name, node->next->name) == 0)
         {
             node->next = node->next->next;
+            return;
         }
     }
 }
@@ -103,9 +116,15 @@ void undefine(char* name)
 int main()
 {
     define("foo", "bar");
-    printf("%s\n", lookup("foo") == NULL ? "not exist" : "exist");
-    printf("%s\n", lookup("foo") == NULL ? "not exist" : "exist");
+    define("bar", "baz");
+
+    printf("foo %s\n", lookup("foo") == NULL ? "does not exist" : "exists");
+    printf("bar %s\n", lookup("bar") == NULL ? "does not exist" : "exists");
+
     undefine("foo");
-    printf("%s\n", lookup("foo") == NULL ? "not exist" : "exist");
+    undefine("bar");
+
+    printf("foo %s\n", lookup("foo") == NULL ? "does not exist" : "exists");
+    printf("bar %s\n", lookup("bar") == NULL ? "does not exist" : "exists");
     return 0;
 }
