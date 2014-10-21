@@ -162,7 +162,8 @@ int get_line(char line[])
 
 int tokenize(char line[], char* words[])
 {
-    int char_index = 0;
+    int line_char_index = 0;
+    int word_char_index = 0;
     int word_index = 0;
     int current_char = EOF;
 
@@ -170,19 +171,31 @@ int tokenize(char line[], char* words[])
     {
         char* word = malloc(MAX_WORD_LENGTH + 1);
 
-        while (isspace(current_char = getch()))
+        while (isspace(current_char = line[line_char_index++]))
         {
-            /* Remove any leading whitespace. */
+            /* Skip any leading whitespace. */
         }
 
-        while (isalnum(current_char = getch()) && current_char != EOF && current_char != '\n' && char_index < MAX_WORD_LENGTH)
+        if (isalnum(current_char))
         {
-            word[char_index++] = current_char;
+            /* Go back one so that we don't ignore the first character after the whitespace we skipped above. */
+            --line_char_index;
         }
 
-        word[char_index] = '\0';
-        words[word_index++] = word;
-        char_index = 0;
+        while (isalnum(current_char = line[line_char_index++]) && current_char != EOF && current_char != '\n' && word_char_index < MAX_WORD_LENGTH)
+        {
+            word[word_char_index++] = current_char;
+        }
+
+        word[word_char_index] = '\0';
+
+        /* Ignore words of zero length. */
+        if (word_char_index != 0)
+        {
+            words[word_index++] = word;
+        }
+
+        word_char_index = 0;
 
         if (current_char == EOF || current_char == '\n')
         {
@@ -190,7 +203,7 @@ int tokenize(char line[], char* words[])
         }
         else
         {
-            ungetch(current_char);
+            --line_char_index;
         }
     }
 
@@ -213,7 +226,7 @@ int main()
         printf("num words %d\n", num_words);
 
         for (int i = 0; i < num_words; ++i)
-            printf("%d %s\n", i, words[i]);
+            printf("%d \"%s\"\n", i, words[i]);
     }
 
     return 0;
