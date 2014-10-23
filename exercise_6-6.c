@@ -9,8 +9,11 @@ enum constants
     GETCH_BUFFER_SIZE = 1000,
     HASH_SIZE = 101,
     MAX_LINE_LENGTH = 1000,
+    MAX_NUM_LINES = 1000,
     MAX_NUM_WORDS_PER_LINE = 1000,
     MAX_WORD_LENGTH = 100,
+    POSSIBLE_DEFINE = 3,
+    POSSIBLE_UNDEFINE = 2,
 };
 static int getch_buffer[GETCH_BUFFER_SIZE];
 static int getch_index = 0;
@@ -212,18 +215,75 @@ int tokenize(char line[], char* words[])
     return word_index;
 }
 
+bool handle_possible_define(char* words[])
+{
+    if (strcmp(words[0], "#define") == 0)
+    {
+        define(words[1], words[2]);
+        return true;
+    }
+
+    return false;
+}
+
+bool handle_possible_undefine(char* words[])
+{
+    if (strcmp(words[0], "#undef") == 0)
+    {
+        undefine(words[1]);
+        return true;
+    }
+
+    return false;
+}
+
 int main()
 {
     char line[MAX_LINE_LENGTH] = { 0 };
+    char* lines[MAX_NUM_LINES];
     char* words[MAX_NUM_WORDS_PER_LINE] = { 0 };
+
+    int num_lines = 0;
 
     while (get_line(line) > 0)
     {
-        int num_words = tokenize(line, words);
-        printf("num words %d\n", num_words);
+        lines[num_lines++] = line;
 
-        for (int i = 0; i < num_words; ++i)
-            printf("%d \"%s\"\n", i, words[i]);
+        int num_words = tokenize(line, words);
+
+        bool should_ignore_on_this_line = false;
+
+        switch (num_words)
+        {
+            /*
+             * This does not (yet) support defines with multiple words
+             * following the name of the macro.
+             */
+            case POSSIBLE_DEFINE:
+                should_ignore_on_this_line = handle_possible_define(words);
+                break;
+            case POSSIBLE_UNDEFINE:
+                should_ignore_on_this_line = handle_possible_undefine(words);
+                break;
+            default:
+                break;
+        }
+
+        if (!should_ignore_on_this_line)
+        {
+            struct list* node;
+            for (int i = 0; i < num_words; ++i)
+            {
+                if ((node = lookup(words[i])) != NULL)
+                {
+                    printf("%s", node->replacement);
+                }
+                else
+                {
+                    printf("%s", words[i]);
+                }
+            }
+        }
     }
 
     return 0;
