@@ -176,13 +176,10 @@ int tokenize(char line[], char* words[])
             /* Skip any leading whitespace. */
         }
 
-        if (isalnum(current_char))
-        {
-            /* Go back one so that we don't ignore the first character after the whitespace we skipped above. */
-            --line_char_index;
-        }
-
-        while (isalnum(current_char = line[line_char_index++]) && current_char != EOF && current_char != '\n' && word_char_index < MAX_WORD_LENGTH)
+        /* Essentially the same as ungetch(current_char). */
+        --line_char_index;
+        
+        while ((current_char = line[line_char_index++]) != EOF && !isspace(current_char) && word_char_index < MAX_WORD_LENGTH)
         {
             word[word_char_index++] = current_char;
         }
