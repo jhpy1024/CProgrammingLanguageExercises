@@ -181,7 +181,7 @@ int tokenize(char line[], char* words[])
 
         /* Essentially the same as ungetch(current_char). */
         --line_char_index;
-        
+
         while ((current_char = line[line_char_index++]) != EOF && !isspace(current_char) && word_char_index < MAX_WORD_LENGTH)
         {
             word[word_char_index++] = current_char;
@@ -237,11 +237,37 @@ bool handle_possible_undefine(char* words[])
     return false;
 }
 
+bool suitable_for_replacement(char* line, char* occurence, int replacement_length)
+{
+    if (occurence == NULL)
+    {
+        return false;
+    }
+
+    if (occurence == line)
+    {
+        return !isalnum(*(occurence + replacement_length));
+    }
+    else
+    {
+        return !(isalnum(*(occurence - 1)) || isalnum(*(occurence + replacement_length)));
+    }
+}
+
 int main()
 {
     char line[MAX_LINE_LENGTH] = { 0 };
-    char* lines[MAX_NUM_LINES];
-    char* words[MAX_NUM_WORDS_PER_LINE] = { 0 };
+    char* lines[MAX_NUM_LINES]; char* words[MAX_NUM_WORDS_PER_LINE] = { 0 };
+
+    /*
+     * lines_to_ignore[line_number] is set to true when line is a #define/#undef statement.
+     * If we didn't do this, the following line:
+     *      #define foo bar
+     * would be converted to:
+     *      #define bar bar
+     * which is clearly not the desired behaviour.
+     */
+    bool lines_to_ignore[MAX_NUM_LINES] = { 0 };
 
     int num_lines = 0;
 
@@ -251,16 +277,6 @@ int main()
 
         int num_words = tokenize(line, words);
 
-        /*
-         * This is set to true when we are on a line with a #define/#undef statement.
-         * If we didn't do this, the following line:
-         *      #define foo bar
-         * would be converted to:
-         *      #define bar bar
-         * which is clearly not the desired behaviour.
-         */
-        bool should_ignore_on_this_line = false;
-
         switch (num_words)
         {
             /*
@@ -268,27 +284,67 @@ int main()
              * following the name of the macro.
              */
             case POSSIBLE_DEFINE:
-                should_ignore_on_this_line = handle_possible_define(words);
+                lines_to_ignore[num_lines - 1] = handle_possible_define(words);
                 break;
             case POSSIBLE_UNDEFINE:
-                should_ignore_on_this_line = handle_possible_undefine(words);
+                lines_to_ignore[num_lines - 1] = handle_possible_undefine(words);
                 break;
             default:
                 break;
         }
 
-        if (!should_ignore_on_this_line)
+        /*
+         * For each #defined word for each line, do a strstr for the defined symbol.
+         * If a substring is found and the characters before and after the substring aren't:
+         *      numeric
+         *      alphabetic
+         * and we are not:
+         *      in a string
+         *      in a comment
+         *      ignoring this line (because it is the line in which the symbol was defined)
+         * then replace the symbol with the replacement text.
+         */
+
+        for (int i = 0; i < num_lines; ++i)
         {
-            struct list* node;
-            for (int i = 0; i < num_words; ++i)
+            if (lines_to_ignore[i])
             {
-                if ((node = lookup(words[i])) != NULL)
+                continue;
+            }
+
+            for (int j = 0; j < HASH_SIZE; ++j)
+            {
+                struct list* node = hash_table[j];
+
+                for (; node != NULL; node = node->next)
                 {
-                    printf("%s", node->replacement);
-                }
-                else
-                {
-                    printf("%s", words[i]);
+                    char* occurence = strstr(lines[i], node->name);
+                    while (occurence != NULL)
+                    {
+                        if (suitable_for_replacement(lines[i], occurence, strlen(node->name)))
+                        {
+                            for (char* c = lines[i]; c < occurence; ++c)
+                            {
+                                putchar(*c);
+                            }
+
+                            printf("%s", node->replacement);
+
+                            for (char* c = occurence + strlen(node->name); *c; ++c)
+                            {
+                                putchar(*c);
+                            }
+                        }
+
+                        if (strlen(node->name) >= strlen(occurence))
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            occurence = strstr(occurence + strlen(node->name), node->name);
+                        }
+                    }
                 }
             }
         }
