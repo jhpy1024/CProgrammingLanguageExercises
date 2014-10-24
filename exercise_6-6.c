@@ -251,6 +251,14 @@ int main()
 
         int num_words = tokenize(line, words);
 
+        /*
+         * This is set to true when we are on a line with a #define/#undef statement.
+         * If we didn't do this, the following line:
+         *      #define foo bar
+         * would be converted to:
+         *      #define bar bar
+         * which is clearly not the desired behaviour.
+         */
         bool should_ignore_on_this_line = false;
 
         switch (num_words)
