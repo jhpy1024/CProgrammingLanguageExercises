@@ -323,6 +323,15 @@ int main()
                     {
                         if (suitable_for_replacement(lines[i], occurence, strlen(node->name)))
                         {
+                            /*
+                             * TODO:
+                             *      Printing code should be executed regardless of whether the
+                             *      occurence is suitable for replacement.
+                             *
+                             *      For each occurence, don't print from the start of the line
+                             *      to that occurence. I think this is why lines are being printed
+                             *      twice.
+                             */
                             for (char* c = lines[i]; c < occurence; ++c)
                             {
                                 putchar(*c);
