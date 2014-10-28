@@ -318,41 +318,33 @@ int main()
 
                 for (; node != NULL; node = node->next)
                 {
+                    char* start = lines[i];
                     char* occurence = strstr(lines[i], node->name);
+
                     while (occurence != NULL)
                     {
-                        if (suitable_for_replacement(lines[i], occurence, strlen(node->name)))
+                        /* Print characters before the occurence. */
+                        for (char* c = start; c < occurence; ++c)
                         {
-                            /*
-                             * TODO:
-                             *      Printing code should be executed regardless of whether the
-                             *      occurence is suitable for replacement.
-                             *
-                             *      For each occurence, don't print from the start of the line
-                             *      to that occurence. I think this is why lines are being printed
-                             *      twice.
-                             */
-                            for (char* c = lines[i]; c < occurence; ++c)
-                            {
-                                putchar(*c);
-                            }
-
-                            printf("%s", node->replacement);
-
-                            for (char* c = occurence + strlen(node->name); *c; ++c)
-                            {
-                                putchar(*c);
-                            }
+                            putchar(*c);
                         }
 
-                        if (strlen(node->name) >= strlen(occurence))
+                        if (suitable_for_replacement(lines[i], occurence, strlen(node->replacement)))
                         {
-                            break;
+                            printf("%s", node->replacement);
                         }
                         else
                         {
-                            occurence = strstr(occurence + strlen(node->name), node->name);
+                            char* c = occurence;
+                            for (; c < occurence + strlen(node->name); ++c)
+                            {
+                                putchar(*c);
+                            }
+                            start = c;
                         }
+
+                        
+                        occurence = strstr(occurence + strlen(node->name), node->name);
                     }
                 }
             }
