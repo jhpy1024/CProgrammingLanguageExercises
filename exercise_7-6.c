@@ -51,5 +51,8 @@ int main(int argc, char* argv[])
         }
     }
 
+    fclose(file1);
+    fclose(file2);
+
     return EXIT_SUCCESS;
 }
